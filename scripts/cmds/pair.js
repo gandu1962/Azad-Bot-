@@ -1,97 +1,55 @@
-const axios = require("axios");
-const fs = require("fs-extra");
-const path = require("path");
-const { createCanvas, loadImage } = require("canvas");
+const axios = require ("axios");
+const fs = require ("fs-extra");
 
 module.exports = {
   config: {
     name: "pair",
     aliases: [],
-    version: "2.6",
-    author: "Azad Vai",
+    version: "1.0",
+    author: "nexo_here",
     countDown: 5,
     role: 0,
-    shortDescription: "Cute love pair display system",
-    longDescription: "Pair with someone (mention/reply/random) and show both profile pics inside one image",
+    shortDescription: " ",
+    longDescription: "",
     category: "love",
-    guide: "{pn} [@mention or reply or blank]"
+    guide: "{pn}"
   },
 
-  onStart: async function ({ event, usersData, threadsData, message }) {
-    const { threadID, senderID, mentions, messageReply } = event;
+  onStart: async function({ api, event, threadsData, usersData }) {
 
-    let uid1 = senderID;
-    let uid2;
+    const { threadID, messageID, senderID } = event;
+    const { participantIDs } = await api.getThreadInfo(threadID);
+    var tle = Math.floor(Math.random() * 101);
+    var namee = (await usersData.get(senderID)).name
+    const botID = api.getCurrentUserID();
+    const listUserID = participantIDs.filter(ID => ID != botID && ID != senderID);
+    var id = listUserID[Math.floor(Math.random() * listUserID.length)];
+    var name = (await usersData.get(id)).name
+    var arraytag = [];
+    arraytag.push({ id: senderID, tag: namee });
+    arraytag.push({ id: id, tag: name });
 
-    // Detect second user
-    if (messageReply) {
-      uid2 = messageReply.senderID;
-    } else if (Object.keys(mentions).length > 0) {
-      uid2 = Object.keys(mentions)[0];
-    } else {
-      const threadInfo = await threadsData.get(threadID);
-      const members = threadInfo.members.map(u => u.userID).filter(id => id !== uid1);
-      if (members.length === 0) return message.reply("⚠️ Group e onno keu nai pair korar jonno!");
-      uid2 = members[Math.floor(Math.random() * members.length)];
-    }
+    let Avatar = (await axios.get(`https://graph.facebook.com/${senderID}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`, { responseType: "arraybuffer" })).data;
+    fs.writeFileSync(__dirname + "/cache/avt.png", Buffer.from(Avatar, "utf-8"));
 
-    // Get names (with fallback)
-    let name1 = await usersData.getName(uid1);
-    let name2 = await usersData.getName(uid2);
-    if (!name1) name1 = `User ${uid1}`;
-    if (!name2) name2 = `User ${uid2}`;
+    let gifLove = (await axios.get(`https://i.ibb.co/y4dWfQq/image.gif`, { responseType: "arraybuffer" })).data;
+    fs.writeFileSync(__dirname + "/cache/giflove.png", Buffer.from(gifLove, "utf-8"));
 
-    // Get avatars
-    const avatarURL1 = await usersData.getAvatarUrl(uid1);
-    const avatarURL2 = await usersData.getAvatarUrl(uid2);
+    let Avatar2 = (await axios.get(`https://graph.facebook.com/${id}/picture?width=512&height=512&access_token=6628568379%7Cc1e620fa708a1d5696fb991c1bde5662`, { responseType: "arraybuffer" })).data;
+    fs.writeFileSync(__dirname + "/cache/avt2.png", Buffer.from(Avatar2, "utf-8"));
 
-    const pathImg = path.join(__dirname, "cache", `pair_${uid1}_${uid2}.png`);
-    const canvas = createCanvas(700, 500);
-    const ctx = canvas.getContext("2d");
+    var imglove = [];
 
-    // Background
-    ctx.fillStyle = "#10131c";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    imglove.push(fs.createReadStream(__dirname + "/cache/avt.png"));
+    imglove.push(fs.createReadStream(__dirname + "/cache/giflove.png"));
+    imglove.push(fs.createReadStream(__dirname + "/cache/avt2.png"));
 
-    // Load avatars
-    const avatar1 = await loadImage(avatarURL1);
-    const avatar2 = await loadImage(avatarURL2);
+    var msg = {
+      body: `🥰Successful pairing!\n💌Wish you two hundred years of happiness\n💕Double ratio: ${tle}%\n${namee} 💓 ${name}`,
+      mentions: arraytag,
+      attachment: imglove
+    };
 
-    // Draw avatars
-    ctx.drawImage(avatar1, 100, 100, 200, 200);
-    ctx.drawImage(avatar2, 400, 100, 200, 200);
-
-    // ❤️ Small Heart in center with glow
-    ctx.font = "60px Arial";
-    ctx.fillStyle = "red";
-    ctx.shadowColor = "#ff4d4d";
-    ctx.shadowBlur = 10;
-    ctx.fillText("❤️", 320, 200);
-
-    // Clear shadow
-    ctx.shadowColor = "transparent";
-    ctx.shadowBlur = 0;
-
-    // Names under avatars
-    ctx.font = "26px Arial";
-    ctx.fillStyle = "#9eeaff";
-    const name1Width = ctx.measureText(name1).width;
-    const name2Width = ctx.measureText(name2).width;
-    ctx.fillText(name1, 200 - name1Width / 2, 330);
-    ctx.fillText(name2, 500 - name2Width / 2, 330);
-
-    // Romantic message
-    ctx.font = "30px Arial";
-    ctx.fillStyle = "#ff8ba7";
-    ctx.fillText("💌 I love you only you ❤️", 180, 420);
-
-    // Save and send
-    const buffer = canvas.toBuffer();
-    fs.writeFileSync(pathImg, buffer);
-
-    return message.reply({
-      body: `💖 ${name1} ❤️ ${name2}`,
-      attachment: fs.createReadStream(pathImg)
-    }, () => fs.unlinkSync(pathImg));
+    return api.sendMessage(msg, event.threadID, event.messageID);
   }
 };
