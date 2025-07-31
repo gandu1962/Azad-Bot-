@@ -1,93 +1,73 @@
 module.exports = {
   config: {
     name: "help",
-    aliases: ["menu", "cmd"],
-    version: "12.0",
-    author: "Azad Vai",
-    role: 0,
-    shortDescription: "Super VIP help system",
-    longDescription: "Premium category-wise menu with clean spacing, styled text and colorful emojis",
-    category: "info"
+    aliases: ["menu", "commands"],
+    version: "2.0",
+    author: "nexo_here",
+    shortDescription: "Show all available commands",
+    longDescription: "Display a categorized list of all available commands.",
+    category: "system",
+    guide: "{pn} [command name]"
   },
 
-  onStart: async function ({ message }) {
-    const prefix = ",";
-    const owner = "azad_🐢";
+  onStart: async function ({ message, args, event, commandName, prefix }) {
+    const allCommands = global.GoatBot.commands;
+    const categories = {};
 
-    const content = `
-╔═════════🌟『  𝘼𝙯𝙖𝙙 𝙃𝙀𝙇𝙋 𝙈𝙀𝙉𝙐 』🌟═════════╗
+    for (const [name, cmd] of allCommands) {
+      const cat = cmd.config.category || "others";
+      if (!categories[cat]) categories[cat] = [];
+      categories[cat].push({
+        name: cmd.config.name,
+        desc: cmd.config.shortDescription || ""
+      });
+    }
 
-📁 😄 𝗙𝗨𝗡 𝗭𝗢𝗡𝗘
-┣ 🎭 • 𝒄𝒂𝒕
-┣ 🤡 • 𝒉𝒂𝒄𝒌
-┣ 😘 • 𝒌𝒊𝒔𝒔
-┣ ⚔️ • 𝒘𝒂𝒓
-┣ 💩 • 𝒖𝒈𝒍𝒚
-┗━━━━━━━━━━━━━━━━━━━━━━━◈
+    if (args[0]) {
+      const query = args[0].toLowerCase();
+      const cmd = allCommands.get(query) || [...allCommands.values()].find(c => c.config.aliases?.includes(query));
+      if (!cmd) return message.reply(`❌ Command "${query}" not found.`);
 
-📁 🔞 𝗔𝗗𝗨𝗟𝗧 𝗭𝗢𝗡𝗘
-┣ 🍑 • 𝒏𝒖𝒅𝒆
-┣ 🥵 • 𝒄𝒉𝒖𝒅𝒊
-┣ 👅 • 𝒇𝒊𝒏𝒈𝒆𝒓𝒊𝒏𝒈
-┗━━━━━━━━━━━━━━━━━━━━━━━◈
+      const { name, description, category, guide, author, version, aliases } = cmd.config;
+      return message.reply(
+        `✨ Command Information:\n` +
+        `• Name: ${name}\n` +
+        `• Description: ${description || "No description"}\n` +
+        `• Category: ${category}\n` +
+        `• Aliases: ${aliases?.join(", ") || "None"}\n` +
+        `• Version: ${version}\n` +
+        `• Author: ${author}\n\n` +
+        `📘 Usage:\n${guide.replace(/{pn}/g, prefix + name)}`
+      );
+    }
 
-📁 💡 𝗔𝗜 & 𝗕𝗢𝗧𝗦
-┣ 🧠 • 𝒂𝒊
-┣ 🤖 • 𝒃𝒐𝒕
-┣ 📜 • 𝒈𝒆𝒏𝒙
-┣ 🧾 • 𝒑𝒓𝒐𝒎𝒑𝒕
-┣ 🔮 • 𝒛𝒐𝒙
-┗━━━━━━━━━━━━━━━━━━━━━━━◈
+    const emojiMap = {
+      "system": "🛠️",
+      "AI-IMAGE": "🏜️",
+      "info": "ℹ️",
+      "fun": "🎉",
+      "media": "🎬",
+      "economy": "💰",
+      "games": "🎮",
+      "tools": "🧰",
+      "others": "📁"
+    };
 
-📁 ⚙️ 𝗦𝗬𝗦𝗧𝗘𝗠
-┣ 🕒 • 𝒖𝒑2
-┣ 🧮 • 𝒔𝒚𝒔𝒊𝒏𝒇𝒐
-┣ 💬 • 𝒔𝒖𝒑𝒑𝒐𝒓𝒕𝒈𝒄
-┗━━━━━━━━━━━━━━━━━━━━━━━◈
+    let msg = "📜 Help Menu\nHere are the available commands:\n\n";
 
-📁 🖼️ 𝗜𝗠𝗔𝗚𝗘 & 𝗔𝗥𝗧
-┣ 🎨 • 𝒂𝒓𝒕
-┣ ✍️ • 𝒄𝒓𝒆𝒂𝒕𝒆
-┣ 👤 • 𝒑𝒓𝒐𝒇𝒊𝒍𝒆
-┣ 🧑‍🎨 • 𝒂𝒗𝒂𝒕𝒂𝒓
-┣ 🔖 • 𝒘𝒂𝒏𝒕𝒆𝒅
-┗━━━━━━━━━━━━━━━━━━━━━━━◈
+    for (const cat of Object.keys(categories).sort()) {
+      msg += `${emojiMap[cat] || "📁"} ${capitalize(cat)}:\n`;
+      const cmds = categories[cat]
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map(c => `• ${c.name}${c.desc}`);
+      msg += cmds.join("\n") + "\n\n";
+    }
 
-📁 💰 𝗘𝗖𝗢𝗡𝗢𝗠𝗬
-┣ 💸 • 𝒃𝒂𝒍𝒂𝒏𝒄𝒆
-┣ 🏦 • 𝒃𝒂𝒏𝒌
-┣ 📆 • 𝒅𝒂𝒊𝒍𝒚
-┣ 🎯 • 𝒓𝒐𝒃
-┗━━━━━━━━━━━━━━━━━━━━━━━◈
-
-📁 💞 𝗟𝗢𝗩𝗘 & 𝗣𝗔𝗜𝗥𝗦
-┣ 💘 • 𝒑𝒂𝒊𝒓
-┣ 💞 • 𝒑𝒂𝒊𝒓2
-┣ 🥰 • 𝒎𝒂𝒕𝒄𝒉
-┗━━━━━━━━━━━━━━━━━━━━━━━◈
-
-📁 📽️ 𝗠𝗘𝗗𝗜𝗔
-┣ 🎧 • 𝒔𝒐𝒏𝒈
-┣ 🎤 • 𝒔𝒊𝒏𝒈
-┣ 🗣️ • 𝒔𝒂𝒚
-┣ 📹 • 𝒗𝒊𝒅𝒆𝒐
-┣ ▶️ • 𝒚𝒕
-┗━━━━━━━━━━━━━━━━━━━━━━━◈
-
-📁 👑 𝗢𝗪𝗡𝗘𝗥 𝗣𝗔𝗡𝗘𝗟
-┣ 🗿 • 𝒐𝒘𝒏𝒆𝒓_Yoʋʀ ʌzʌɗ
-┣ 🧵 • 𝒕𝒉𝒓𝒆𝒂𝒅_⏳
-┣ 🌐 • 𝒔𝒆𝒕𝒍𝒂𝒏𝒈_🚀
-┣ 🤝 • 𝒋𝒐𝒊𝒏_ https://m.me/j/Abb2zd8qJJciphPX/
-┗━━━━━━━━━━━━━━━━━━━━━━━◈
-
-📌 𝐓𝐨𝐭𝐚𝐥 𝐂𝐨𝐦𝐦𝐚𝐧𝐝𝐬: 𝟐𝟒𝟔+
-🔑 𝐏𝐫𝐞𝐟𝐢𝐱: ${prefix}
-👑 𝐎𝐰𝐧𝐞𝐫: ${owner}
-📖 𝐔𝐬𝐚𝐠𝐞: ${prefix}help [category name]
-
-╚═════════🌈『 𝐄𝐍𝐃 𝐎𝐅 𝐌𝐄𝐍𝐔 』🌈═════════╝`;
-
-    return message.reply(content);
+    msg += `💡 Tip: Type "${prefix}help [command]" to view detailed info.`;
+    return message.reply(msg);
   }
 };
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
