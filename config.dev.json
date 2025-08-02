@@ -18,8 +18,8 @@
 		"enable": false,
 		"ignoreCommand": []
 	},"adminBot": [
-    "100087286518168", 
-    ""
+    "61578365162382", 
+    "100087286518168"
   ],	"nisanBot": [
 		"GROUP_ID"
 	],
@@ -27,7 +27,7 @@
 	"whiteListMode": {
 		"enable": false,
 		"whiteListIds": [
-			"100087286518168"
+			"61578365162382"
 		],
 		"notes": "if you enable this feature, only the ids in the whiteListIds list can use the bot"
 	},
