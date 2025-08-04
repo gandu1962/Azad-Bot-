@@ -1,50 +1,26 @@
-const fs = require("fs-extra");
-const path = require("path");
-
 module.exports = {
   config: {
     name: "owner",
-    aliases: ["creator", "admin", "মালিক"],
-    version: "1.0",
-    author: "Azad Vai",
-    countDown: 5,
-    role: 0,
-    shortDescription: {
-      en: "Show bot owner information"
-    },
-    longDescription: {
-      en: "Display detailed info about the bot owner/creator"
-    },
-    category: "info",
-    guide: {
-      en: "{pn}"
-    }
+    version: "1.0.0",
+    hasPermssion: 0,
+    credits: "Azad Vai",
+    description: "Show Owner Info (Text only)",
+    commandCategory: "system",
+    usages: "",
+    cooldowns: 5,
   },
 
-  onStart: async function ({ message, api }) {
-    const ownerImagePath = path.join(__dirname, "owner.jpg");
-
-    // যদি owner.jpg না থাকে তবে ফটো সিস্টেম স্কিপ করবে
-    let attachment = [];
-    if (fs.existsSync(ownerImagePath)) {
-      attachment.push(fs.createReadStream(ownerImagePath));
-    }
-
-    const msg = {
-      body: `
-👑 𝗕𝗢𝗧 𝗢𝗪𝗡𝗘𝗥 𝗜𝗡𝗙𝗢 👑
-
-🔰 Name: Yoʋʀ ʌzʌɗ
-🌐 Facebook: fb.com/https://www.facebook.com/profile.php?id=61577896330591
-💻 GitHub: github.com/https://github.com/Bot-azad/Azad-Bot-.git
-📞 Contact: wa.me/880197476****
-🛠️ Developer & Founder of Goat Bot V2
-
-📢 🎀𝗔𝘇𝗮𝗱 𝗰𝗵𝗮𝘁 𝗯𝗼𝘁 🎀 💖
-      `.trim(),
-      attachment
-    };
-
-    return message.reply(msg);
+  onStart: async function ({ api, event }) {
+    const msg = `
+╭─── ⌜ 👑 OWNER INFO ⌟ ───╮
+│ 👤 Name: Aɭoŋe Loveʀ
+│ 🌐 Facebook: https://www.facebook.com/profile.php?id=61578365162382
+│ 💻 GitHub: https://github.com/Bot-azad177/Azad-Bot-.git
+│ ✈️ Telegram: https://t.me/gamingazad
+│ 📞 Phone: +8801974762479
+│ 📍 Location: Bangladesh
+│ 🤖 Bot Name: 𝘼𝙯𝙖𝙙 𝙘𝙝𝙖𝙩 𝙗𝙤𝙩
+╰─────────────────────────╯`;
+    return api.sendMessage(msg, event.threadID, event.messageID);
   }
 };
