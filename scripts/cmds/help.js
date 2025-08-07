@@ -53,7 +53,7 @@ module.exports = {
       "others": "📁"
     };
 
-    let msg = "📜 Help Menu\nHere are the available commands:\n\n";
+    let msg = "📜 azad Menu\nHere are the available commands:\n\n";
 
     for (const cat of Object.keys(categories).sort()) {
       msg += `${emojiMap[cat] || "📁"} ${capitalize(cat)}:\n`;
@@ -63,7 +63,7 @@ module.exports = {
       msg += cmds.join("\n") + "\n\n";
     }
 
-    msg += `💡 Tip: Type "${prefix}help [command]" to view detailed info.`;
+    msg += `💡 Tip: Type "${prefix}help [command]" to azad view detailed info.`;
     return message.reply(msg);
   }
 };
